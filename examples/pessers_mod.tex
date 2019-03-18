@@ -1,0 +1,194 @@
+
+\documentclass[border=8pt, multi, tikz]{standalone} 
+\usepackage{import}
+\subimport{../nnplot/layers/}{init}
+\usetikzlibrary{positioning}
+\usetikzlibrary{3d} %for including external image 
+
+
+\def\ConvColor{rgb:yellow,5;red,2.5;white,5}
+\def\ConvReluColor{rgb:yellow,5;red,5;white,5}
+\def\PoolColor{rgb:red,1;black,0.3}
+\def\UnpoolColor{rgb:blue,2;green,1;black,0.3}
+\def\FcColor{rgb:blue,5;red,2.5;white,5}
+\def\FcReluColor{rgb:blue,5;red,5;white,4}
+\def\SoftmaxColor{rgb:magenta,5;black,7}   
+\def\SumColor{rgb:blue,5;green,15}
+
+
+\newcommand{\copymidarrow}{\tikz \draw[-Stealth,line width=0.8mm,draw={rgb:blue,4;red,1;green,1;black,3}] (-0.3,0) -- ++(0.3,0);}
+
+\begin{document}
+\begin{tikzpicture}
+\tikzstyle{connection}=[ultra thick,every node/.style={sloped,allow upside down},draw=\edgecolor,opacity=0.7]
+\tikzstyle{copyconnection}=[ultra thick,every node/.style={sloped,allow upside down},draw={rgb:blue,4;red,1;green,1;black,3},opacity=0.7]
+
+%%%%%%%%%
+% Encoder2
+%%%%%%%%%
+% Encoder
+
+\pic[shift={(0,0,0)}] at (0,0,0) 
+    {Box={
+        name=Encoder_conv_0,
+        caption= ,
+        xlabel={{32, }},
+        zlabel=256,
+        fill=\ConvColor,
+        height=40.0,
+        width=1.0,
+        depth=40.0
+        }
+    };
+
+
+\pic[shift={(0, 0, 0)}] at (Encoder_conv_0-east) 
+    {Box={
+        name=Encoder_conv_1,
+        caption= ,
+        xlabel={{32, }},
+        zlabel=256,
+        fill=\ConvColor,
+        height=40.0,
+        width=1.0,
+        depth=40.0
+        }
+    };
+
+
+\pic[shift={(0, 0, 0)}] at (Encoder_conv_1-east) 
+    {Box={
+        name=Encoder_conv_2,
+        caption= ,
+        xlabel={{32, }},
+        zlabel=256,
+        fill=\ConvColor,
+        height=40.0,
+        width=1.0,
+        depth=40.0
+        }
+    };
+
+
+%%%%%
+% Connections
+
+\pic[shift={(2, 0, 0)}] at (Encoder_conv_2-east) 
+    {Box={
+        name=Encoder2_deconv_1,
+        caption= ,
+        xlabel={{16, }},
+        zlabel=512,
+        fill=\PoolColor,
+        height=80.0,
+        width=0.5,
+        depth=80.0
+        }
+    };
+
+\pic[shift={(3, 0, 0)}] at (Encoder2_deconv_1-east)
+    {Ball={name=Encoder2_plus_2,
+             fill=\SumColor, 
+             opacity=0.6,
+             radius=2.5,
+             logo=$+$}};
+
+\pic[shift={(2, 0, 0)}] at (Encoder2_plus_2-east) 
+    {Box={
+        name=Encoder2_conv_3,
+        caption= ,
+        xlabel={{16, }},
+        zlabel=512,
+        fill=\ConvColor,
+        height=80.0,
+        width=0.5,
+        depth=80.0
+        }
+    };
+
+%%%%%%%%%
+% Res_0
+
+\pic[shift={(2, 0, 0)}] at (Encoder2_conv_3-east) 
+    {Box={
+        name=Res_0_conv_0,
+        caption= ,
+        xlabel={{64, }},
+        zlabel=256,
+        fill=\ConvColor,
+        height=80.0,
+        width=1,
+        depth=80.0
+        }
+    };
+
+
+\pic[shift={(0, 0, 0)}] at (Res_0_conv_0-east) 
+    {Box={
+        name=Res_0_conv_1,
+        caption= ,
+        xlabel={{16, }},
+        zlabel=512,
+        fill=\ConvColor,
+        height=80.0,
+        width=1,
+        depth=80.0
+        }
+    };
+
+\pic[shift={(1, 0, 0)}] at (Res_0_conv_1-east)
+    {Ball={name=Res_0_plus_2,
+             fill=\SumColor, 
+             opacity=0.6,
+             radius=2.5,
+             logo=$+$}};
+
+%%%%%
+% Connections
+
+\draw [connection]  (Res_0_conv_1-east)    -- node {\midarrow} (Res_0_plus_2-west);
+
+
+\path (Encoder2_conv_3-southeast) -- (Encoder2_conv_3-northeast) coordinate[pos=1.1] (Encoder2_conv_3-top) ;
+\path (Res_0_plus_2-south)  -- (Res_0_plus_2-north)  coordinate[pos=10.1] (Res_0_plus_2-top) ;
+\draw [copyconnection]  (Encoder2_conv_3-northeast)  
+-- node {\copymidarrow}(Encoder2_conv_3-top)
+-- node {\copymidarrow}(Res_0_plus_2-top)
+-- node {\copymidarrow} (Res_0_plus_2-north);
+
+
+%%%%%
+% Connections
+
+\draw [connection]  (Encoder_conv_2-east)    -- node {\midarrow} (Encoder2_deconv_1-west);
+
+\draw[densely dashed]
+(Encoder_conv_2-nearnortheast) -- (Encoder2_deconv_1-nearnorthwest)
+(Encoder_conv_2-nearsoutheast) -- (Encoder2_deconv_1-nearsouthwest)
+(Encoder_conv_2-farsoutheast) -- (Encoder2_deconv_1-farsouthwest)
+(Encoder_conv_2-farnortheast) -- (Encoder2_deconv_1-farnorthwest)
+;
+
+
+\draw [connection]  (Encoder2_deconv_1-east)    -- node {\midarrow} (Encoder2_plus_2-west);
+
+
+\draw [connection]  (Encoder2_deconv_1-east)    -- node {\midarrow} (Encoder2_plus_2-west);
+
+
+\path (Encoder_conv_1-southeast) -- (Encoder_conv_1-northeast) coordinate[pos=1.25] (Encoder_conv_1-top) ;
+\path (Encoder2_plus_2-south)  -- (Encoder2_plus_2-north)  coordinate[pos=6.5] (Encoder2_plus_2-top) ;
+\draw [copyconnection]  (Encoder_conv_1-northeast)  
+-- node {\copymidarrow}(Encoder_conv_1-top)
+-- node {\copymidarrow}(Encoder2_plus_2-top)
+-- node {\copymidarrow} (Encoder2_plus_2-north);
+
+
+\draw [connection]  (Encoder2_plus_2-east)    -- node {\midarrow} (Encoder2_conv_3-west);
+
+
+\draw [connection]  (Encoder2_conv_3-east)    -- node {\midarrow} (Res_0_conv_0-west);
+
+
+\end{tikzpicture}
+\end{document}

@@ -1,8 +1,9 @@
 
 import os
+import nnplot
 
-def to_head( projectpath ):
-    pathlayers = os.path.join( projectpath, 'layers/' )
+def to_head(project_root):
+    pathlayers = os.path.join( project_root, 'nnplot/layers/' )
     return r"""
 \documentclass[border=8pt, multi, tikz]{standalone} 
 \usepackage{import}
@@ -20,6 +21,7 @@ def to_cor():
 \def\FcColor{rgb:blue,5;red,2.5;white,5}
 \def\FcReluColor{rgb:blue,5;red,5;white,4}
 \def\SoftmaxColor{rgb:magenta,5;black,7}   
+\def\SumColor{rgb:blue,5;green,15}
 """
 
 def to_begin():
@@ -55,6 +57,45 @@ def to_Conv( name, s_filer=256, n_filer=64, offset="(0,0,0)", to="(0,0,0)", widt
         }
     };
 """
+
+# Transposed Conv
+def to_DeConv( name, s_filer=256, n_filer=64, offset="(0,0,0)", to="(0,0,0)", width=1, height=40, depth=40, caption=" " ):
+    return r"""
+\pic[shift={"""+ offset +"""}] at """+ to +""" 
+    {Box={
+        name=""" + name +""",
+        caption="""+ caption +r""",
+        xlabel={{"""+ str(n_filer) +""", }},
+        zlabel="""+ str(s_filer) +""",
+        fill=\PoolColor,
+        height="""+ str(height) +""",
+        width="""+ str(width) +""",
+        depth="""+ str(depth) +"""
+        }
+    };
+"""
+
+
+def cage_between(name_left, name_right):
+    '''Draws a densly dotted cage between two boxes.'''
+    return '''\draw[densely dashed]
+({left}-nearnortheast) -- ({right}-nearnorthwest)
+({left}-nearsoutheast) -- ({right}-nearsouthwest)
+({left}-farsoutheast) -- ({right}-farsouthwest)
+({left}-farnortheast) -- ({right}-farnorthwest)
+;
+'''.format(left=name_left, right=name_right)
+
+
+def plus(name, offset='(0,0,0)', to='(0,0,0)', **kwargs):
+    '''A plus in a ball'''
+
+    return r'''\pic[shift={{{offset}}}] at {to}
+    {{Ball={{name={name},
+             fill=\SumColor, 
+             opacity=0.6,
+             radius=2.5,
+             logo=$+$}}}};'''.format(offset=offset, name=name, to=to)
 
 # Conv,Conv,relu
 # Bottleneck
@@ -170,10 +211,10 @@ def to_connection( of, to):
 \draw [connection]  ("""+of+"""-east)    -- node {\midarrow} ("""+to+"""-west);
 """
 
-def to_skip( of, to, pos=1.25):
+def to_skip( of, to, pos1=1.25, pos2=1.25):
     return r"""
-\path ("""+ of +"""-southeast) -- ("""+ of +"""-northeast) coordinate[pos="""+ str(pos) +"""] ("""+ of +"""-top) ;
-\path ("""+ to +"""-south)  -- ("""+ to +"""-north)  coordinate[pos=1.25] ("""+ to +"""-top) ;
+\path ("""+ of +"""-southeast) -- ("""+ of +"""-northeast) coordinate[pos="""+ str(pos1) +"""] ("""+ of +"""-top) ;
+\path ("""+ to +"""-south)  -- ("""+ to +"""-north)  coordinate[pos=""" + str(pos2) + """] ("""+ to +"""-top) ;
 \draw [copyconnection]  ("""+of+"""-northeast)  
 -- node {\copymidarrow}("""+of+"""-top)
 -- node {\copymidarrow}("""+to+"""-top)
