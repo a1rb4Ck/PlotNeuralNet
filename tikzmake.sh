@@ -1,11 +1,11 @@
 #!/bin/bash
 
+python $1.py
 
-python $1.py 
 pdflatex $1.tex
+pdftoppm -png -r 70 $1.pdf > $1.png
 
-rm *.aux *.log *.vscodeLog
-rm *.tex
+rm -rf *.aux *.log *.vscodeLog
+# rm -rf *.tex
 
 xdg-open $1.pdf
-

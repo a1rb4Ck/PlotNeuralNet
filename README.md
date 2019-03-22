@@ -22,7 +22,7 @@ Latex code for drawing neural networks for reports and presentation. Have a look
         import sys
         sys.path.append('../')
         from pycore.tikzeng import *
-
+        
         # defined your arch
         arch = [
             to_head( '..' ),
@@ -37,11 +37,11 @@ Latex code for drawing neural networks for reports and presentation. Have a look
             to_connection("pool2", "soft1"),
             to_end()
             ]
-
+        
         def main():
             namefile = str(sys.argv[0]).split('.')[0]
             to_generate(arch, namefile + '.tex' )
-
+        
         if __name__ == '__main__':
             main()
 
