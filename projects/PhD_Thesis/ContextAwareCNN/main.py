@@ -22,7 +22,7 @@ arch = [
     to_begin(),
 
     # input
-    *to_input('Class5_0978.PNG', width=6.5, height=6.5, name="net_in"),
+    *to_input(pathfile='Class5_0978_cropped.PNG', width=6.5, height=6.5, name="net_in"),
 
     *block_2ConvPool(
         name='b1',

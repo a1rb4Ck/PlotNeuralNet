@@ -86,3 +86,5 @@ venv.bak/
 \.idea/
 
 \.vscode/
+
+*.pyc
