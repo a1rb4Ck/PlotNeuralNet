@@ -3,6 +3,7 @@ import os
 
 def to_head(projectpath):
     pathlayers = os.path.join(projectpath, 'layers/')
+    pathlayers = pathlayers.replace("\\", "/")  # Fix for windows builds
     return r"""
 \documentclass[border=8pt, multi, tikz]{standalone}
 \usepackage{import}
