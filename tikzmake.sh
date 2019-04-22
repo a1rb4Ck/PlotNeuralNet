@@ -8,4 +8,8 @@ pdftoppm -png -r 70 $1.pdf > $1.png
 rm -rf *.aux *.log *.vscodeLog
 # rm -rf *.tex
 
-xdg-open $1.pdf
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    open $1.pdf
+else
+    xdg-open $1.pdf
+fi
