@@ -6,5 +6,5 @@ pdftoppm -png -r 70 %~1.pdf > %~1.png
 del /F /Q *.log *.aux
 REM del /F /Q *.tex
 
-start %~1.pdf
+REM start %~1.pdf
 PAUSE;
