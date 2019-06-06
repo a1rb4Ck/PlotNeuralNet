@@ -20,8 +20,13 @@ Latex code for drawing neural networks for reports and presentation. Have a look
         sudo apt-get install texlive-fonts-extra
         sudo apt-get install texlive-latex-extra
         ```
-        
-2. Execute the example as followed.
+
+2. Install with distutils.
+	```bash
+	python3 setup.py install
+	```
+
+3. Execute the example as followed.
 
     ```bash
     cd pyexamples/
