@@ -1,8 +1,9 @@
 from pycore.tikzeng import *
 
 
-def block_2ConvPool(
-    name, connect_in, connect_out, output_size=256, n_filters=64, offset="(1,0,0)", size=(32, 32, 3.5), opacity=0.5
+def block_ConvPool(
+    name, connect_in, connect_out, output_size=256, n_filters=64,
+    offset="(1,0,0)", size=(32, 32, 3.5), opacity=0.5, caption=" "
 ):
     if output_size > 500:
         pool_offset = 1.5
@@ -14,15 +15,16 @@ def block_2ConvPool(
         pool_offset = 0.95
 
     block = [
-        to_ConvConvRelu(
+        to_ConvRelu(
             name="ccr_{}".format(name),
             output_size=str(output_size),
-            n_filters=(n_filters, n_filters),
+            n_filters=n_filters,
             offset=offset,
             to="({}-east)".format(connect_in) if connect_in is not None and connect_in != "None" else "(0,0,0)",
-            width=(size[2], size[2]),
+            width=size[2],
             height=size[0],
             depth=size[1],
+            caption=caption
         ),
         to_Pool(
             name="{}".format(connect_out),
@@ -44,8 +46,55 @@ def block_2ConvPool(
     return block
 
 
+def block_2ConvPool(
+    name, connect_in, connect_out, output_size=256, n_filters=64,
+    offset="(1,0,0)", size=(32, 32, 3.5), opacity=0.5, caption=" "
+):
+    if output_size > 500:
+        pool_offset = 1.5
+    elif output_size > 200:
+        pool_offset = 1.3
+    elif output_size > 100:
+        pool_offset = 1.20
+    else:
+        pool_offset = 0.95
+
+    block = [
+        to_ConvConvRelu(
+            name="ccr_{}".format(name),
+            output_size=str(output_size),
+            n_filters=(n_filters, n_filters),
+            offset=offset,
+            to="({}-east)".format(connect_in) if connect_in is not None and connect_in != "None" else "(0,0,0)",
+            width=(size[2], size[2]),
+            height=size[0],
+            depth=size[1],
+            caption=caption
+        ),
+        to_Pool(
+            name="{}".format(connect_out),
+            output_size=int(output_size / 2),
+            n_filters=n_filters,
+            offset="(%s,0,0)" % pool_offset,
+            to="(ccr_{}-east)".format(name),
+            width=size[2],
+            height=int(size[0] * .7),
+            depth=int(size[1] * .7),
+            opacity=opacity,
+        ),
+        to_connection("ccr_{}".format(name), "{}".format(connect_out)),
+    ]
+
+    if connect_in is not None:
+        block.append(
+            to_connection("{}".format(connect_in), "ccr_{}".format(name)))
+
+    return block
+
+
 def block_Upscale2Conv(
-    name, connect_in, output_size=256, n_filters=64, offset="(1,0,0)", size=(32, 32, 3.5), opacity=0.5
+    name, connect_in, output_size=256, n_filters=64, offset="(1,0,0)",
+    size=(32, 32, 3.5), opacity=0.5, caption=" "
 ):
 
     if output_size < 100:
@@ -79,6 +128,7 @@ def block_Upscale2Conv(
             height=size[0],
             depth=size[1],
             opacity=0.5,
+            caption=caption
         ),
         to_ConvConvRelu(
             name="ccr_{}".format(name),
@@ -97,7 +147,8 @@ def block_Upscale2Conv(
 
 
 def block_Unconv(
-    name, connect_in, connect_out, output_size=256, n_filters=64, offset="(1,0,0)", size=(32, 32, 3.5), opacity=0.5
+    name, connect_in, connect_out, output_size=256, n_filters=64,
+    offset="(1,0,0)", size=(32, 32, 3.5), opacity=0.5, caption=" "
 ):
     return [
         to_UnPool(
@@ -120,7 +171,7 @@ def block_Unconv(
             width=size[2],
             height=size[0],
             depth=size[1],
-            opacity=opacity
+            opacity=opacity,
         ),
         to_Conv(
             name='ccr_{}'.format(name),
@@ -130,7 +181,8 @@ def block_Unconv(
             n_filters=str(n_filters),
             width=size[2],
             height=size[0],
-            depth=size[1]
+            depth=size[1],
+            caption=caption
         ),
         to_ConvRes(
             name='ccr_res_c_{}'.format(name),
@@ -158,19 +210,12 @@ def block_Unconv(
 
 
 def block_Res(
-    num,
-    name,
-    connect_in,
-    connect_out,
-    output_size=256,
-    n_filters=64,
-    offset="(0,0,0)",
-    size=(32, 32, 3.5),
-    opacity=0.5
+    num, name, connect_in, connect_out, output_size=256, n_filters=64,
+    offset="(0,0,0)", size=(32, 32, 3.5), opacity=0.5, caption=" "
 ):
     lys = []
     layers = [*['{}_{}'.format(name, i) for i in range(num - 1)], top]
-    for name in layers:
+    for i, name in enumerate(layers):
         ly = [
             to_Conv(
                 name='{}'.format(name),
@@ -180,7 +225,8 @@ def block_Res(
                 n_filters=str(n_filters),
                 width=size[2],
                 height=size[0],
-                depth=size[1]
+                depth=size[1],
+                caption=" " if (i != len(layers)) else caption
             ),
             to_connection("{}".format(connect_in), "{}".format(name))
         ]

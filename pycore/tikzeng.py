@@ -28,6 +28,9 @@ def to_cor():
 \def\FcColor{rgb:blue,5;red,2.5;white,5}
 \def\FcReluColor{rgb:blue,5;red,5;white,4}
 \def\SoftmaxColor{rgb:pink,5;white,1}
+\def\DropoutColor{rgb:black,7}
+\def\ReluColor{rgb:blue,5;red,2.5;white,5}
+\def\BatchNormColor{rgb:yellow,5;red,5;white,5}
 """
 
 
@@ -36,7 +39,9 @@ def to_begin():
 \newcommand{\copymidarrow}{\tikz \draw[-Stealth,line width=0.8mm,draw={rgb:blue,4;red,1;green,1;black,3}] (-0.3,0) -- ++(0.3,0);}
 
 \begin{document}
-\begin{tikzpicture}
+\begin{tikzpicture}[
+  node distance=0.2cm,
+  legendtext/.style={text width=3cm}]
 \tikzstyle{connection}=[ultra thick,every node/.style={sloped,allow upside down},draw=\edgecolor,opacity=0.7]
 \tikzstyle{copyconnection}=[ultra thick,every node/.style={sloped,allow upside down},draw={rgb:blue,4;red,1;green,1;black,3},opacity=0.7]
 """
@@ -55,9 +60,20 @@ def to_input(pathfile, to='(-3,0,0)', width=8, height=8, name="net_in"):
 """
 
 
+def to_output(pathfile, to='(5,0,0)', width=8, height=8, name="temp"):
+    return r"""
+\node[canvas is zy plane at x=0] (""" + name + """) at """ + to + """
+    {\includegraphics[
+        width=""" + str(width) + "cm" + """,
+        height=""" + str(height) + "cm" + """
+    ]{""" + pathfile + """}};
+"""
+
+
 # Conv
 def to_Conv(
-    name, output_size=256, n_filters=64, offset="(0,0,0)", to="(0,0,0)", width=1, height=40, depth=40, caption=" "
+    name, output_size=256, n_filters=64, offset="(0,0,0)", to="(0,0,0)",
+    width=1, height=40, depth=40, caption=" "
 ):
     return r"""
 \pic[shift={""" + offset + """}] at """ + to + """
@@ -75,18 +91,33 @@ def to_Conv(
 """
 
 
+# Conv,relu
+def to_ConvRelu(
+    name, output_size=256, n_filters=64, offset="(0,0,0)", to="(0,0,0)",
+    width=2, height=40, depth=40, caption=" "
+):
+    return r"""
+\pic[shift={ """ + offset + """ }] at """ + to + """
+    {RightBandedBox={
+        name=""" + name + """,
+        caption=""" + caption + """,
+        xlabel={{""" + str(n_filters) + """, }},
+        zlabel=""" + str(output_size) + """,
+        fill=\ConvColor,
+        bandfill=\ConvReluColor,
+        height=""" + str(height) + """,
+        width=""" + str(width) + """,
+        depth=""" + str(depth) + """
+        }
+    };
+"""
+
+
 # Conv,Conv,relu
 # Bottleneck
 def to_ConvConvRelu(
-    name,
-    output_size=256,
-    n_filters=(64, 64),
-    offset="(0,0,0)",
-    to="(0,0,0)",
-    width=(2, 2),
-    height=40,
-    depth=40,
-    caption=" "
+    name, output_size=256, n_filters=(64, 64), offset="(0,0,0)", to="(0,0,0)",
+    width=(2, 2), height=40, depth=40, caption=" "
 ):
     return r"""
 \pic[shift={ """ + offset + """ }] at """ + to + """
@@ -99,6 +130,79 @@ def to_ConvConvRelu(
         bandfill=\ConvReluColor,
         height=""" + str(height) + """,
         width={ """ + str(width[0]) + """ , """ + str(width[1]) + """ },
+        depth=""" + str(depth) + """
+        }
+    };
+"""
+
+
+# Fully Connected Relu
+def to_FcRelu(name, output_size=256, offset="(0,0,0)", to="(0,0,0)",
+              width=1, height=32, depth=32, caption=" "):
+    return r"""
+\pic[shift={""" + offset + """}] at """ + to + """
+    {RightBandedBox={
+        name=""" + name + """,
+        caption=""" + caption + r""",
+        zlabel=""" + str(output_size) + """,
+        fill=\FcColor,
+        bandfill=\FcReluColor,
+        height=""" + str(height) + """,
+        width=""" + str(width) + """,
+        depth=""" + str(depth) + """
+        }
+    };
+"""
+
+
+# Dropout
+def to_Dropout(name, offset="(0,0,0)", to="(0,0,0)",
+               width=1, height=32, depth=32, opacity=0.75, caption=" "):
+    return r"""
+\pic[shift={ """ + offset + """ }] at """ + to + """
+    {Box={
+        name=""" + name + """,
+        caption=""" + caption + r""",
+        fill=\DropoutColor,
+        opacity=""" + str(opacity) + """,
+        height=""" + str(height) + """,
+        width=""" + str(width) + """,
+        depth=""" + str(depth) + """
+        }
+    };
+"""
+
+
+# ReLU
+def to_Relu(name, offset="(0,0,0)", to="(0,0,0)",
+            width=1, height=32, depth=32, opacity=0.5, caption=" "):
+    return r"""
+\pic[shift={ """ + offset + """ }] at """ + to + """
+    {Box={
+        name=""" + name + """,
+        caption=""" + caption + r""",
+        fill=\ReluColor,
+        opacity=""" + str(opacity) + """,
+        height=""" + str(height) + """,
+        width=""" + str(width) + """,
+        depth=""" + str(depth) + """
+        }
+    };
+"""
+
+
+# Batch Norm
+def to_BatchNorm(name, offset="(0,0,0)", to="(0,0,0)",
+                 width=1, height=32, depth=32, opacity=0.5, caption=" "):
+    return r"""
+\pic[shift={ """ + offset + """ }] at """ + to + """
+    {Box={
+        name=""" + name + """,
+        caption=""" + caption + r""",
+        fill=\BatchNormColor,
+        opacity=""" + str(opacity) + """,
+        height=""" + str(height) + """,
+        width=""" + str(width) + """,
         depth=""" + str(depth) + """
         }
     };
@@ -290,6 +394,35 @@ def to_end():
 \end{tikzpicture}
 \end{document}
 """
+
+
+def to_text(offset="(0,0,0)", to="(0,0,0)", caption=""):
+    return r"""
+\end{tikzpicture}
+\end{document}
+"""
+
+
+def to_legend(items, captions, offset='(0,2,0)', column=0, row=0,
+              vertical=False):
+    legend = '\n\\matrix [draw,below left, label={[font=\\large]above:Legend}'
+    legend += ', shift={%s}, column sep=%imm, row sep=%imm' % (
+        offset, column, row)
+    legend += ', align=center, nodes={anchor=center}]'
+    legend += ' at (current bounding box.south east) {\n'
+    if vertical:
+        for item, caption in zip(items, captions):
+            legend += item
+            legend += ' & \\node[legendtext]{%s};\n\\\\\n' % caption
+    else:
+        for item in items:
+            legend += item + ' & '
+        legend += '\\\\\n'
+        for caption in captions:
+            legend += '\\node[legendtext]{%s}; & ' % caption
+        legend += '\\\\'
+    legend += '};\n'
+    return legend
 
 
 def to_generate(arch, pathname="file.tex"):
